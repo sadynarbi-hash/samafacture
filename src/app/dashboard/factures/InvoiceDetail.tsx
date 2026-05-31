@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { useApp } from '@/lib/store';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import { formatAmount, formatDate } from '@/lib/utils';
+import { generateInvoicePDF } from '@/lib/generatePDF';
 import type { Invoice } from '@/types';
 import { Share2, Printer, Pencil, CheckCircle, CreditCard, X } from 'lucide-react';
 
@@ -19,10 +21,12 @@ interface Props {
 
 export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
   const supabase = createClient();
+  const { currentBusiness } = useApp();
   const [showPayment, setShowPayment] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentNote, setPaymentNote] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   const remaining = invoice.total_amount - invoice.paid_amount;
 
@@ -66,13 +70,35 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
     }
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: `Facture ${invoice.invoice_number}`,
-        text: `Facture de ${formatAmount(invoice.total_amount, invoice.currency)} — ${invoice.client?.name ?? 'Client'}`,
-      });
+  const handleShare = async () => {
+    setSharing(true);
+    try {
+      const blob = await generateInvoicePDF(invoice, currentBusiness?.name ?? 'Mon entreprise');
+      const fileName = `Facture-${invoice.invoice_number}-${invoice.client?.name ?? 'client'}.pdf`;
+      const file = new File([blob], fileName, { type: 'application/pdf' });
+
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: fileName });
+      } else {
+        // Fallback: download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSharing(false);
     }
+  };
+
+  const handlePrint = async () => {
+    const blob = await generateInvoicePDF(invoice, currentBusiness?.name ?? 'Mon entreprise');
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
   };
 
   return (
@@ -181,13 +207,18 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
       <div className="flex gap-3">
         <button
           onClick={handleShare}
-          className="flex-1 flex flex-col items-center gap-1 py-3 bg-white rounded-2xl text-sm font-medium text-gray-600 hover:bg-gray-50 shadow-sm"
+          disabled={sharing}
+          className="flex-1 flex flex-col items-center gap-1 py-3 bg-white rounded-2xl text-sm font-medium text-gray-600 hover:bg-gray-50 shadow-sm disabled:opacity-50"
         >
-          <Share2 size={18} />
+          {sharing ? (
+            <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Share2 size={18} />
+          )}
           Partager
         </button>
         <button
-          onClick={() => window.print()}
+          onClick={handlePrint}
           className="flex-1 flex flex-col items-center gap-1 py-3 bg-white rounded-2xl text-sm font-medium text-gray-600 hover:bg-gray-50 shadow-sm"
         >
           <Printer size={18} />
