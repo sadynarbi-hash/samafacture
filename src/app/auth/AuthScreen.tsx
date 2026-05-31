@@ -1,18 +1,22 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { FileText, Mail } from 'lucide-react';
+import { FileText } from 'lucide-react';
 
 type Step = 'main' | 'email';
+type Mode = 'signin' | 'signup';
 
 export default function AuthScreen() {
+  const router = useRouter();
   const [step, setStep] = useState<Step>('main');
+  const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
   const supabase = createClient();
 
@@ -32,21 +36,40 @@ export default function AuthScreen() {
     });
   };
 
-  const handleEmail = async (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !password) return;
     setLoading(true);
     setError('');
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-    });
-    setLoading(false);
-    if (error) {
-      setError(error.message);
+
+    if (mode === 'signup') {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+      // After signup, sign in directly
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setError(signInError.message);
+        setLoading(false);
+        return;
+      }
     } else {
-      setSent(true);
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setError(error.message === 'Invalid login credentials'
+          ? 'Email ou mot de passe incorrect'
+          : error.message
+        );
+        setLoading(false);
+        return;
+      }
     }
+
+    router.push('/dashboard/factures');
+    router.refresh();
   };
 
   if (step === 'email') {
@@ -54,42 +77,51 @@ export default function AuthScreen() {
       <div className="min-h-dvh bg-gray-100 flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm">
           <button
-            onClick={() => { setStep('main'); setSent(false); setError(''); }}
+            onClick={() => { setStep('main'); setError(''); }}
             className="text-gray-500 text-sm mb-8 flex items-center gap-1 hover:text-black"
           >
             ← Retour
           </button>
 
-          {sent ? (
-            <div className="bg-white rounded-3xl p-8 text-center shadow-sm">
-              <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
-                <Mail size={28} className="text-white" />
-              </div>
-              <h2 className="text-2xl font-bold mb-2">Vérifiez vos emails</h2>
-              <p className="text-gray-500 text-sm">
-                Un lien de connexion a été envoyé à <strong>{email}</strong>. Cliquez sur le lien pour vous connecter.
-              </p>
-            </div>
-          ) : (
-            <div className="bg-white rounded-3xl p-8 shadow-sm">
-              <h2 className="text-2xl font-bold mb-1">Continuer avec Email</h2>
-              <p className="text-gray-500 text-sm mb-6">Nous vous enverrons un lien de connexion</p>
-              <form onSubmit={handleEmail} className="space-y-4">
-                <Input
-                  type="email"
-                  placeholder="votre@email.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  label="Adresse email"
-                  required
-                />
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-                <Button type="submit" fullWidth loading={loading} disabled={!email}>
-                  Envoyer le lien
-                </Button>
-              </form>
-            </div>
-          )}
+          <div className="bg-white rounded-3xl p-8 shadow-sm">
+            <h2 className="text-2xl font-bold mb-1">
+              {mode === 'signin' ? 'Se connecter' : 'Créer un compte'}
+            </h2>
+            <p className="text-gray-500 text-sm mb-6">avec votre adresse email</p>
+
+            <form onSubmit={handleEmailAuth} className="space-y-4">
+              <Input
+                type="email"
+                placeholder="votre@email.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                label="Adresse email"
+                required
+                autoFocus
+              />
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                label="Mot de passe"
+                required
+              />
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+              <Button type="submit" fullWidth loading={loading} disabled={!email || !password}>
+                {mode === 'signin' ? 'Se connecter' : 'Créer mon compte'}
+              </Button>
+            </form>
+
+            <button
+              onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); }}
+              className="w-full text-center text-gray-400 text-sm mt-4 hover:text-black transition-colors"
+            >
+              {mode === 'signin'
+                ? "Pas encore de compte ? S'inscrire"
+                : 'Déjà un compte ? Se connecter'}
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -98,7 +130,6 @@ export default function AuthScreen() {
   return (
     <div className="min-h-dvh bg-gray-100 flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="text-center mb-10">
           <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
             <FileText size={32} className="text-white" />
@@ -111,7 +142,6 @@ export default function AuthScreen() {
           </p>
         </div>
 
-        {/* Auth options */}
         <div className="space-y-3">
           <button
             onClick={handleGoogle}
@@ -139,7 +169,7 @@ export default function AuthScreen() {
           </button>
 
           <button
-            onClick={() => setStep('email')}
+            onClick={() => { setStep('email'); setMode('signin'); }}
             className="w-full text-center text-gray-400 text-sm py-3 hover:text-gray-600 transition-colors"
           >
             Continuer avec Email
