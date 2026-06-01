@@ -1,37 +1,48 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Check } from 'lucide-react';
+import { Check, ArrowRight } from 'lucide-react';
 import type { TemplateId } from '@/lib/pdfTemplates';
 
 interface Props {
-  selected: TemplateId;
-  onChange: (t: TemplateId) => void;
+  onSelect: (t: TemplateId) => void;
+  onBack: () => void;
 }
 
 const previews: { id: TemplateId; name: string; description: string; preview: React.ReactNode }[] = [
   {
     id: 'classique',
     name: 'Classique',
-    description: 'En-tête noir',
+    description: 'En-tête noir avec nom de l\'entreprise',
     preview: (
-      <div className="w-full h-full bg-white rounded-lg overflow-hidden">
-        <div className="bg-black h-6 w-full flex items-center px-2">
-          <div className="w-8 h-1.5 bg-white/80 rounded" />
-          <div className="ml-auto w-4 h-1 bg-white/50 rounded" />
+      <div className="w-full h-full bg-white">
+        <div className="bg-black h-10 w-full flex items-end px-3 pb-2 gap-2">
+          <div className="w-16 h-2 bg-white/80 rounded-sm" />
+          <div className="ml-auto flex flex-col items-end gap-1">
+            <div className="w-10 h-1.5 bg-white/40 rounded-sm" />
+            <div className="w-7 h-1 bg-white/30 rounded-sm" />
+          </div>
         </div>
-        <div className="p-2 space-y-1.5">
-          <div className="w-12 h-1 bg-gray-200 rounded" />
-          <div className="w-8 h-1 bg-gray-100 rounded" />
-          <div className="mt-2 bg-gray-100 h-1 w-full rounded" />
+        <div className="p-3 space-y-2">
+          <div className="w-14 h-1.5 bg-gray-300 rounded-sm" />
+          <div className="w-10 h-1 bg-gray-200 rounded-sm" />
+          <div className="mt-3 bg-gray-100 h-5 w-full rounded-sm flex items-center px-2 gap-2">
+            <div className="flex-1 h-1 bg-gray-300 rounded" />
+            <div className="w-5 h-1 bg-gray-300 rounded" />
+            <div className="w-8 h-1 bg-gray-300 rounded" />
+          </div>
           {[1,2,3].map(i => (
-            <div key={i} className="flex gap-1">
-              <div className="flex-1 h-1 bg-gray-100 rounded" />
-              <div className="w-4 h-1 bg-gray-100 rounded" />
-              <div className="w-6 h-1 bg-gray-100 rounded" />
+            <div key={i} className="flex items-center gap-2 py-1 border-b border-gray-100">
+              <div className="flex-1 h-1 bg-gray-200 rounded" />
+              <div className="w-4 h-1 bg-gray-200 rounded" />
+              <div className="w-8 h-1 bg-gray-200 rounded" />
             </div>
           ))}
-          <div className="ml-auto w-16 h-3 bg-black rounded mt-2" />
+          <div className="flex justify-end mt-2">
+            <div className="w-20 h-6 bg-black rounded-full flex items-center justify-center">
+              <div className="w-10 h-1.5 bg-white/70 rounded" />
+            </div>
+          </div>
         </div>
       </div>
     ),
@@ -39,26 +50,40 @@ const previews: { id: TemplateId; name: string; description: string; preview: Re
   {
     id: 'moderne',
     name: 'Moderne',
-    description: 'Ligne bleue',
+    description: 'Ligne bleue, design contemporain',
     preview: (
-      <div className="w-full h-full bg-white rounded-lg overflow-hidden">
-        <div className="bg-blue-600 h-1 w-full" />
-        <div className="p-2 space-y-1.5">
-          <div className="flex justify-between items-start">
-            <div className="w-12 h-2 bg-blue-600 rounded" />
-            <div className="w-6 h-1.5 bg-gray-200 rounded" />
+      <div className="w-full h-full bg-white">
+        <div className="bg-blue-600 h-1.5 w-full" />
+        <div className="p-3">
+          <div className="flex justify-between items-start mb-3">
+            <div className="space-y-1">
+              <div className="w-16 h-2.5 bg-blue-600 rounded-sm" />
+              <div className="w-10 h-1 bg-gray-200 rounded-sm" />
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              <div className="w-8 h-1 bg-gray-300 rounded-sm" />
+              <div className="w-12 h-2 bg-gray-800 rounded-sm" />
+            </div>
           </div>
-          <div className="border-b border-blue-200 pb-1" />
-          <div className="w-10 h-1 bg-gray-200 rounded" />
-          <div className="bg-gray-100 h-1 w-full rounded" />
+          <div className="border-b border-blue-200 mb-3" />
+          <div className="w-12 h-1.5 bg-gray-300 rounded-sm mb-2" />
+          <div className="bg-blue-50 h-5 w-full rounded-sm flex items-center px-2 gap-2 mb-1">
+            <div className="flex-1 h-1 bg-blue-200 rounded" />
+            <div className="w-4 h-1 bg-blue-200 rounded" />
+            <div className="w-8 h-1 bg-blue-200 rounded" />
+          </div>
           {[1,2,3].map(i => (
-            <div key={i} className="flex gap-1">
-              <div className="flex-1 h-1 bg-gray-100 rounded" />
-              <div className="w-4 h-1 bg-gray-100 rounded" />
-              <div className="w-6 h-1 bg-gray-100 rounded" />
+            <div key={i} className="flex items-center gap-2 py-1 border-b border-gray-100">
+              <div className="flex-1 h-1 bg-gray-200 rounded" />
+              <div className="w-4 h-1 bg-gray-200 rounded" />
+              <div className="w-8 h-1 bg-gray-200 rounded" />
             </div>
           ))}
-          <div className="ml-auto w-16 h-3 bg-blue-600 rounded mt-2" />
+          <div className="flex justify-end mt-2">
+            <div className="w-20 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+              <div className="w-10 h-1.5 bg-white/70 rounded" />
+            </div>
+          </div>
         </div>
       </div>
     ),
@@ -66,56 +91,75 @@ const previews: { id: TemplateId; name: string; description: string; preview: Re
   {
     id: 'epure',
     name: 'Épuré',
-    description: 'Minimaliste',
+    description: 'Minimaliste tout blanc',
     preview: (
-      <div className="w-full h-full bg-white rounded-lg overflow-hidden">
-        <div className="p-2 space-y-1.5">
-          <div className="flex justify-between items-start">
-            <div className="w-12 h-2 bg-gray-800 rounded" />
-            <div className="w-6 h-1.5 bg-gray-300 rounded" />
+      <div className="w-full h-full bg-white p-3">
+        <div className="flex justify-between items-start mb-3">
+          <div className="space-y-1">
+            <div className="w-16 h-2.5 bg-gray-800 rounded-sm" />
+            <div className="w-10 h-1 bg-gray-200 rounded-sm" />
           </div>
-          <div className="border-b border-gray-100 pb-1" />
-          <div className="w-10 h-1 bg-gray-200 rounded" />
-          <div className="bg-gray-50 h-1 w-full rounded" />
-          {[1,2,3].map(i => (
-            <div key={i} className="flex gap-1">
-              <div className="flex-1 h-1 bg-gray-100 rounded" />
-              <div className="w-4 h-1 bg-gray-100 rounded" />
-              <div className="w-6 h-1 bg-gray-100 rounded" />
-            </div>
-          ))}
-          <div className="ml-auto w-16 h-3 bg-gray-800 rounded mt-2" />
+          <div className="flex flex-col items-end gap-1">
+            <div className="w-8 h-1 bg-gray-200 rounded-sm" />
+            <div className="w-12 h-2 bg-gray-400 rounded-sm" />
+          </div>
+        </div>
+        <div className="border-b border-gray-100 mb-3" />
+        <div className="w-12 h-1.5 bg-gray-200 rounded-sm mb-2" />
+        <div className="bg-gray-50 h-5 w-full rounded-sm flex items-center px-2 gap-2 mb-1">
+          <div className="flex-1 h-1 bg-gray-200 rounded" />
+          <div className="w-4 h-1 bg-gray-200 rounded" />
+          <div className="w-8 h-1 bg-gray-200 rounded" />
+        </div>
+        {[1,2,3].map(i => (
+          <div key={i} className="flex items-center gap-2 py-1 border-b border-gray-50">
+            <div className="flex-1 h-1 bg-gray-100 rounded" />
+            <div className="w-4 h-1 bg-gray-100 rounded" />
+            <div className="w-8 h-1 bg-gray-100 rounded" />
+          </div>
+        ))}
+        <div className="flex justify-end mt-2">
+          <div className="w-20 h-6 bg-gray-800 rounded-full flex items-center justify-center">
+            <div className="w-10 h-1.5 bg-white/70 rounded" />
+          </div>
         </div>
       </div>
     ),
   },
 ];
 
-export default function TemplateSelector({ selected, onChange }: Props) {
+export default function TemplateSelector({ onSelect, onBack }: Props) {
   return (
-    <div>
-      <p className="text-sm font-semibold text-gray-700 mb-3">Modèle de facture</p>
-      <div className="grid grid-cols-3 gap-3">
+    <div className="min-h-full flex flex-col">
+      {/* Header */}
+      <div className="mb-6">
+        <button onClick={onBack} className="text-gray-400 text-sm hover:text-black mb-4 flex items-center gap-1">
+          ← Retour
+        </button>
+        <h2 className="text-2xl font-bold text-black">Choisissez un modèle</h2>
+        <p className="text-gray-400 text-sm mt-1">Il sera utilisé pour générer le PDF de votre facture</p>
+      </div>
+
+      {/* Templates */}
+      <div className="space-y-4 flex-1">
         {previews.map(({ id, name, description, preview }) => (
           <button
             key={id}
-            onClick={() => onChange(id)}
-            className={cn(
-              'flex flex-col items-center gap-2 p-1 rounded-2xl border-2 transition-all',
-              selected === id ? 'border-black' : 'border-gray-200 hover:border-gray-300'
-            )}
+            onClick={() => onSelect(id)}
+            className="w-full flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm hover:shadow-md active:scale-[0.99] transition-all text-left border-2 border-transparent hover:border-gray-100"
           >
-            <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-gray-50">
+            {/* Preview thumbnail */}
+            <div className="w-20 h-28 rounded-xl overflow-hidden border border-gray-100 shrink-0 shadow-sm">
               {preview}
-              {selected === id && (
-                <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-black rounded-full flex items-center justify-center">
-                  <Check size={11} className="text-white" strokeWidth={3} />
-                </div>
-              )}
             </div>
-            <div className="text-center pb-1">
-              <p className="text-xs font-bold text-black">{name}</p>
-              <p className="text-[10px] text-gray-400">{description}</p>
+            {/* Info */}
+            <div className="flex-1">
+              <p className="font-bold text-black text-lg">{name}</p>
+              <p className="text-gray-400 text-sm mt-0.5">{description}</p>
+            </div>
+            {/* Arrow */}
+            <div className="w-9 h-9 bg-black rounded-full flex items-center justify-center shrink-0">
+              <ArrowRight size={16} className="text-white" />
             </div>
           </button>
         ))}
