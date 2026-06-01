@@ -13,6 +13,7 @@ import {
   ChevronRight, LogOut, Zap, Plus, ImagePlus, ExternalLink,
 } from 'lucide-react';
 import type { Business } from '@/types';
+import CatalogueModal from './CatalogueModal';
 
 interface Props {
   businesses: Business[];
@@ -228,22 +229,8 @@ export default function ParametresClient({ businesses: initial }: Props) {
       </Modal>
 
       {/* ── MODAL: Catalogue de prix ── */}
-      <Modal open={activeModal === 'catalogue'} onClose={() => setActiveModal(null)} title="Catalogue de prix">
-        <div className="text-center py-8">
-          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <BookOpen size={28} className="text-gray-400" />
-          </div>
-          <p className="font-semibold text-black mb-2">Catalogue de prix</p>
-          <p className="text-sm text-gray-400 mb-6">
-            Sauvegardez vos services et produits fréquents pour les ajouter rapidement à vos factures.
-          </p>
-          <p className="text-xs bg-yellow-50 text-yellow-700 rounded-xl px-4 py-3 font-medium">
-            Fonctionnalité disponible sur le plan Illimité
-          </p>
-          <Button fullWidth className="mt-4" onClick={() => setActiveModal('abonnement')}>
-            Passer à l&apos;illimité
-          </Button>
-        </div>
+      <Modal open={activeModal === 'catalogue'} onClose={() => setActiveModal(null)} size="full">
+        <CatalogueModal onClose={() => setActiveModal(null)} />
       </Modal>
 
       {/* ── MODAL: Abonnement ── */}
