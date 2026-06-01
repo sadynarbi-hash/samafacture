@@ -9,7 +9,7 @@ import Input from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
 import Image from 'next/image';
 import {
-  User, Building2, CreditCard, BookOpen, Settings, MessageCircle,
+  User, Building2, BookOpen, Settings, MessageCircle,
   ChevronRight, LogOut, Zap, Plus, ImagePlus, ExternalLink,
 } from 'lucide-react';
 import type { Business } from '@/types';
@@ -84,7 +84,6 @@ export default function ParametresClient({ businesses: initial }: Props) {
   const menuItems = [
     { key: 'compte' as ActiveModal, icon: User, label: 'Compte personnel' },
     { key: 'entreprise' as ActiveModal, icon: Building2, label: "Informations de l'entreprise" },
-    { key: null, icon: CreditCard, label: 'Demandes de paiement', external: true },
     { key: 'catalogue' as ActiveModal, icon: BookOpen, label: 'Catalogue de prix' },
     { key: 'abonnement' as ActiveModal, icon: Settings, label: 'Gérer mon abonnement' },
     { key: 'support' as ActiveModal, icon: MessageCircle, label: 'Contacter le support' },
