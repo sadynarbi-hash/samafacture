@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { useApp } from '@/lib/store';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import type { InvoiceItem } from '@/types';
@@ -22,6 +24,8 @@ const typeConfig = [
 ];
 
 export default function AddItemForm({ onSave, onCancel, initial }: Props) {
+  const supabase = createClient();
+  const { currentBusiness } = useApp();
   const [type, setType] = useState<ItemType>(initial?.type ?? 'service');
   const [name, setName] = useState(initial?.name ?? '');
   const [details, setDetails] = useState(initial?.details ?? '');
@@ -34,7 +38,7 @@ export default function AddItemForm({ onSave, onCancel, initial }: Props) {
 
   const canSave = name.trim() && unitPrice && Number(unitPrice) >= 0;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const item: InvoiceItem = {
       id: crypto.randomUUID(),
       type,
@@ -47,6 +51,19 @@ export default function AddItemForm({ onSave, onCancel, initial }: Props) {
       taxable,
       saved_to_catalog: saveToCatalog,
     };
+
+    if (saveToCatalog && currentBusiness) {
+      await supabase.from('catalog_items').insert({
+        business_id: currentBusiness.id,
+        type,
+        name: name.trim(),
+        details: details || null,
+        unit_price: Number(unitPrice),
+        unit_type: unitType || null,
+        taxable,
+      });
+    }
+
     onSave(item);
   };
 
