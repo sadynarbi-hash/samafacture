@@ -11,6 +11,7 @@ import Input from '@/components/ui/Input';
 import { formatAmount, formatDate } from '@/lib/utils';
 import { generateInvoicePDF } from '@/lib/pdfTemplates';
 import type { TemplateId } from '@/lib/pdfTemplates';
+import TemplateSelector from '@/components/ui/TemplateSelector';
 import type { Invoice } from '@/types';
 import { Share2, Printer, Pencil, CheckCircle, CreditCard, X } from 'lucide-react';
 
@@ -29,6 +30,8 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [loading, setLoading] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [showTemplateSelect, setShowTemplateSelect] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'share' | 'print' | null>(null);
 
   const remaining = invoice.total_amount - invoice.paid_amount;
 
@@ -73,37 +76,38 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
     }
   };
 
-  const handleShare = async () => {
-    setSharing(true);
-    try {
-      const tmpl = ((invoice as any).template as TemplateId) || 'classique';
-      const blob = await generateInvoicePDF(invoice, currentBusiness?.name ?? 'Mon entreprise', tmpl);
-      const fileName = `Facture-${invoice.invoice_number}-${invoice.client?.name ?? 'client'}.pdf`;
-      const file = new File([blob], fileName, { type: 'application/pdf' });
-
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: fileName });
-      } else {
-        // Fallback: download
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSharing(false);
-    }
+  const handleShare = () => {
+    setPendingAction('share');
+    setShowTemplateSelect(true);
   };
 
-  const handlePrint = async () => {
-    const tmpl2 = ((invoice as any).template as TemplateId) || 'classique';
-    const blob = await generateInvoicePDF(invoice, currentBusiness?.name ?? 'Mon entreprise', tmpl2);
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+  const handlePrint = () => {
+    setPendingAction('print');
+    setShowTemplateSelect(true);
+  };
+
+  const handleTemplateSelected = async (tmpl: TemplateId) => {
+    setShowTemplateSelect(false);
+    setSharing(true);
+    try {
+      const blob = await generateInvoicePDF(invoice, currentBusiness?.name ?? 'Mon entreprise', tmpl);
+      const fileName = `Facture-${invoice.invoice_number}-${invoice.client?.name ?? 'client'}.pdf`;
+      if (pendingAction === 'print') {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      } else {
+        const file = new File([blob], fileName, { type: 'application/pdf' });
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: fileName });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = fileName; a.click();
+          URL.revokeObjectURL(url);
+        }
+      }
+    } catch (err) { console.error(err); }
+    finally { setSharing(false); setPendingAction(null); }
   };
 
   return (
@@ -325,6 +329,14 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Template selection modal */}
+      <Modal open={showTemplateSelect} onClose={() => setShowTemplateSelect(false)} size="full">
+        <TemplateSelector
+          onSelect={handleTemplateSelected}
+          onBack={() => setShowTemplateSelect(false)}
+        />
       </Modal>
     </div>
   );
