@@ -17,6 +17,50 @@ function phoneToEmail(phone: string): string {
   return `tel_${phone}@samafacture.app`;
 }
 
+// Defined at module level so React never remounts it on re-render
+function PinInput({
+  value,
+  onChange,
+  onComplete,
+  pinRefs,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onComplete?: () => void;
+  pinRefs: React.RefObject<HTMLInputElement | null>[];
+}) {
+  const handle = (rawVal: string, idx: number) => {
+    const digit = rawVal.replace(/\D/g, '').slice(-1);
+    const arr = [...value.split('')];
+    arr[idx] = digit;
+    const newVal = arr.join('');
+    onChange(newVal);
+    if (digit && idx < 3) pinRefs[idx + 1].current?.focus();
+    // newVal is a local var — no stale closure issue
+    if (newVal.length === 4 && onComplete) setTimeout(onComplete, 100);
+  };
+
+  return (
+    <div className="flex gap-3 justify-center">
+      {[0, 1, 2, 3].map(i => (
+        <input
+          key={i}
+          ref={pinRefs[i]}
+          type="tel"
+          inputMode="numeric"
+          maxLength={1}
+          value={value[i] ?? ''}
+          onChange={e => handle(e.target.value, i)}
+          onKeyDown={e => {
+            if (e.key === 'Backspace' && !value[i] && i > 0) pinRefs[i - 1].current?.focus();
+          }}
+          className="w-14 h-14 text-center text-2xl font-bold border-2 border-gray-200 rounded-2xl focus:border-black focus:outline-none bg-white transition-colors"
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function AuthScreen() {
   const router = useRouter();
   const supabase = createClient();
@@ -35,7 +79,12 @@ export default function AuthScreen() {
   const [password, setPassword] = useState('');
   const [emailMode, setEmailMode] = useState<'signin' | 'signup'>('signin');
 
-  const pinRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
+  const pinRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+  ];
 
   const handleGoogle = async () => {
     setLoading(true);
@@ -52,19 +101,16 @@ export default function AuthScreen() {
     setError('');
     setLoading(true);
 
-    const fakeEmail = phoneToEmail(cleaned);
     const { error: signUpError } = await supabase.auth.signUp({
-      email: fakeEmail,
+      email: phoneToEmail(cleaned),
       password: `TEMP_${crypto.randomUUID()}`,
       options: { data: { phone: cleaned, pin_set: false } },
     });
 
     setLoading(false);
     if (!signUpError) {
-      // New user just created + auto-signed in; next step is to set their PIN
       setPhoneStep('newpin');
     } else if (signUpError.message === 'User already registered') {
-      // Existing user → ask for their PIN
       setPhoneStep('pin');
     } else {
       setError(signUpError.message);
@@ -125,7 +171,6 @@ export default function AuthScreen() {
     const cleaned = formatPhone(phone);
     setLoading(true);
     setError('');
-    // User was already created (and signed in) in handlePhoneNext — just update their password
     const { error } = await supabase.auth.updateUser({
       password: `PIN_${newPin}_${cleaned}`,
       data: { pin_set: true },
@@ -137,16 +182,6 @@ export default function AuthScreen() {
       router.push('/onboarding');
       router.refresh();
     }
-  };
-
-  const handlePinInput = (val: string, idx: number, current: string[], setter: (v: string) => void, nextStep?: () => void) => {
-    const digit = val.replace(/\D/g, '').slice(-1);
-    const arr = [...current];
-    arr[idx] = digit;
-    const newVal = arr.join('');
-    setter(newVal);
-    if (digit && idx < 3) pinRefs[idx + 1].current?.focus();
-    if (newVal.length === 4 && nextStep) setTimeout(nextStep, 100);
   };
 
   // ── EMAIL FLOW ──
@@ -172,30 +207,13 @@ export default function AuthScreen() {
   // PHONE SCREENS
   // ────────────────────────────────────────────────────
   if (step === 'phone') {
-    // PIN input component
-    const PinInput = ({ value, onChange, onComplete }: { value: string; onChange: (v: string) => void; onComplete?: () => void }) => (
-      <div className="flex gap-3 justify-center">
-        {[0,1,2,3].map(i => (
-          <input
-            key={i}
-            ref={pinRefs[i]}
-            type="tel"
-            inputMode="numeric"
-            maxLength={1}
-            value={value[i] ?? ''}
-            onChange={e => handlePinInput(e.target.value, i, value.split(''), onChange, onComplete)}
-            onKeyDown={e => { if (e.key === 'Backspace' && !value[i] && i > 0) pinRefs[i-1].current?.focus(); }}
-            className="w-14 h-14 text-center text-2xl font-bold border-2 border-gray-200 rounded-2xl focus:border-black focus:outline-none bg-white transition-colors"
-          />
-        ))}
-      </div>
-    );
-
     return (
       <div className="min-h-dvh bg-gray-100 flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm">
-          <button onClick={() => { setStep('main'); setPhoneStep('number'); setPin(''); setNewPin(''); setConfirmPin(''); setError(''); }}
-            className="text-gray-400 text-sm hover:text-black mb-8 flex items-center gap-1">
+          <button
+            onClick={() => { setStep('main'); setPhoneStep('number'); setPin(''); setNewPin(''); setConfirmPin(''); setError(''); }}
+            className="text-gray-400 text-sm hover:text-black mb-8 flex items-center gap-1"
+          >
             ← Retour
           </button>
 
@@ -234,7 +252,7 @@ export default function AuthScreen() {
               </div>
               <h2 className="text-2xl font-bold mb-1">Votre code PIN</h2>
               <p className="text-gray-400 text-sm mb-8">Entrez votre code à 4 chiffres</p>
-              <PinInput value={pin} onChange={setPin} onComplete={handleSignInWithPin} />
+              <PinInput value={pin} onChange={setPin} onComplete={handleSignInWithPin} pinRefs={pinRefs} />
               {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
               <Button fullWidth loading={loading} disabled={pin.length !== 4} onClick={handleSignInWithPin} className="mt-6">
                 Se connecter
@@ -257,7 +275,7 @@ export default function AuthScreen() {
             <div className="bg-white rounded-3xl p-8 shadow-sm text-center">
               <h2 className="text-2xl font-bold mb-1">Créez votre PIN</h2>
               <p className="text-gray-400 text-sm mb-8">Choisissez un code à 4 chiffres facile à retenir</p>
-              <PinInput value={newPin} onChange={setNewPin} onComplete={() => { if (newPin.length === 4) setPhoneStep('confirmpin'); }} />
+              <PinInput value={newPin} onChange={setNewPin} onComplete={() => setPhoneStep('confirmpin')} pinRefs={pinRefs} />
               <Button fullWidth disabled={newPin.length !== 4} onClick={() => setPhoneStep('confirmpin')} className="mt-6">
                 Continuer
               </Button>
@@ -269,7 +287,7 @@ export default function AuthScreen() {
             <div className="bg-white rounded-3xl p-8 shadow-sm text-center">
               <h2 className="text-2xl font-bold mb-1">Confirmez votre PIN</h2>
               <p className="text-gray-400 text-sm mb-8">Entrez à nouveau votre code à 4 chiffres</p>
-              <PinInput value={confirmPin} onChange={setConfirmPin} onComplete={handleCreateAccount} />
+              <PinInput value={confirmPin} onChange={setConfirmPin} onComplete={handleCreateAccount} pinRefs={pinRefs} />
               {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
               <Button fullWidth loading={loading} disabled={confirmPin.length !== 4} onClick={handleCreateAccount} className="mt-6">
                 Créer mon compte
@@ -337,7 +355,6 @@ export default function AuthScreen() {
         </div>
 
         <div className="space-y-3">
-          {/* PRIMARY: Phone */}
           <button
             onClick={() => { setStep('phone'); setPhoneStep('number'); }}
             className="w-full bg-black text-white rounded-full py-4 px-6 flex items-center justify-center gap-3 font-semibold hover:bg-gray-800 transition-colors shadow-sm"
@@ -346,7 +363,6 @@ export default function AuthScreen() {
             Continuer avec mon numéro
           </button>
 
-          {/* Google */}
           <button
             onClick={handleGoogle}
             disabled={loading}
@@ -361,7 +377,6 @@ export default function AuthScreen() {
             Continuer avec Google
           </button>
 
-          {/* Email link */}
           <button
             onClick={() => setStep('email')}
             className="w-full text-center text-gray-400 text-sm py-2 hover:text-gray-600 flex items-center justify-center gap-2"
