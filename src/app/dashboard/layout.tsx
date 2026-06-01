@@ -19,10 +19,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   if (!businesses || businesses.length === 0) redirect('/onboarding');
 
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('plan')
+    .eq('id', user.id)
+    .single();
+
   const profile: Profile = {
     id: user.id,
     email: user.email ?? '',
-    plan: 'free',
+    plan: (profileData?.plan as 'free' | 'premium') ?? 'free',
     created_at: user.created_at,
   };
 

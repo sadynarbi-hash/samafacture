@@ -8,8 +8,9 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
 import Image from 'next/image';
+import { useApp } from '@/lib/store';
 import {
-  User, Building2, BookOpen, Settings, MessageCircle,
+  User, Building2, BookOpen, Settings, MessageCircle, Crown,
   ChevronRight, LogOut, Zap, Plus, ImagePlus, ExternalLink,
 } from 'lucide-react';
 import type { Business } from '@/types';
@@ -24,6 +25,7 @@ type ActiveModal = 'compte' | 'entreprise' | 'catalogue' | 'abonnement' | 'suppo
 export default function ParametresClient({ businesses: initial }: Props) {
   const supabase = createClient();
   const router = useRouter();
+  const { user } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [businesses, setBusinesses] = useState(initial);
   const current = businesses[0];
@@ -95,8 +97,8 @@ export default function ParametresClient({ businesses: initial }: Props) {
         <h1 className="text-2xl font-bold text-black">Paramètres</h1>
       </div>
 
-      {/* Upgrade banner */}
-      <div className="bg-black text-white rounded-2xl p-4 mb-4 flex items-center justify-between">
+      {/* Upgrade banner — only for free users */}
+      {(!user || user.plan !== 'premium') && <div className="bg-black text-white rounded-2xl p-4 mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
             <Zap size={16} className="text-yellow-300" />
@@ -109,7 +111,15 @@ export default function ParametresClient({ businesses: initial }: Props) {
         <Button size="sm" variant="secondary" onClick={() => setActiveModal('abonnement')} className="!text-black !bg-white text-xs">
           Essayer maintenant
         </Button>
-      </div>
+      </div>}
+
+      {/* Premium badge for premium users */}
+      {user?.plan === 'premium' && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-3 mb-4 flex items-center gap-3">
+          <Crown size={18} className="text-yellow-500 shrink-0" />
+          <p className="text-sm font-semibold text-yellow-700">Plan Illimité actif</p>
+        </div>
+      )}
 
       {/* Business card */}
       {current && (
