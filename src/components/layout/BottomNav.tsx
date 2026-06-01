@@ -27,7 +27,7 @@ export default function BottomNav() {
               href={href}
               className={cn(
                 'flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all',
-                active ? 'text-black' : 'text-gray-400 hover:text-gray-600'
+                active ? 'text-black' : 'text-gray-500 hover:text-black'
               )}
             >
               <Icon size={22} strokeWidth={active ? 2.5 : 1.8} />
