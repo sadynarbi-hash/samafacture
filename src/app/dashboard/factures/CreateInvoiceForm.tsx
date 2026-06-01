@@ -153,9 +153,9 @@ export default function CreateInvoiceForm({ onCreated, onCancel, type }: Props) 
           onClick={() => setShowSelectClient(true)}
           className="w-full p-4 flex items-center gap-3 hover:bg-gray-50 rounded-2xl transition-colors"
         >
-          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center shrink-0">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${client ? 'bg-black' : 'bg-gray-100'}`}>
             {client ? (
-              <span className="text-base font-bold text-black">{client.name[0]}</span>
+              <span className="text-base font-bold text-white">{client.name[0]}</span>
             ) : (
               <User size={18} className="text-gray-400" />
             )}
@@ -167,7 +167,7 @@ export default function CreateInvoiceForm({ onCreated, onCancel, type }: Props) 
                 {client.email && <p className="text-xs text-gray-400">{client.email}</p>}
               </>
             ) : (
-              <p className="text-gray-400 font-medium">Ajouter un client</p>
+              <p className="text-black font-semibold">Ajouter un client</p>
             )}
           </div>
           <ChevronDown size={18} className="text-gray-300" />
