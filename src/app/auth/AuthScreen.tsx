@@ -239,14 +239,16 @@ export default function AuthScreen() {
               <Button fullWidth loading={loading} disabled={pin.length !== 4} onClick={handleSignInWithPin} className="mt-6">
                 Se connecter
               </Button>
-              <button onClick={() => { setPhoneStep('number'); setPin(''); setError(''); }}
-                className="text-gray-400 text-sm mt-4 hover:text-black">
-                Changer de numéro
-              </button>
-              <button onClick={handleResetPin} disabled={loading}
-                className="text-gray-400 text-xs mt-2 hover:text-black disabled:opacity-50">
-                Pas de PIN ?
-              </button>
+              <div className="flex flex-col items-center gap-2 mt-4">
+                <button onClick={() => { setPhoneStep('number'); setPin(''); setError(''); }}
+                  className="text-gray-400 text-sm hover:text-black">
+                  Changer de numéro
+                </button>
+                <button onClick={handleResetPin} disabled={loading}
+                  className="text-gray-400 text-xs hover:text-black disabled:opacity-50">
+                  Pas de PIN ?
+                </button>
+              </div>
             </div>
           )}
 
