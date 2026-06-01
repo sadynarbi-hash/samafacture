@@ -234,7 +234,7 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
         </button>
       </div>
 
-      <Button fullWidth>
+      <Button fullWidth loading={sharing} onClick={handleShare}>
         Envoyer la facture
       </Button>
 
