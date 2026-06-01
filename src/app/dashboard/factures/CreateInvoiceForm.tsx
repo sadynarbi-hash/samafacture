@@ -29,6 +29,7 @@ export default function CreateInvoiceForm({ onCreated, onCancel, type, defaultTe
   const [loading, setLoading] = useState(false);
   const [showAddItem, setShowAddItem] = useState(false);
   const [showSelectClient, setShowSelectClient] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const [template] = useState<TemplateId>(defaultTemplate);
   const [issueDate, setIssueDate] = useState(todayISO());
@@ -83,6 +84,7 @@ export default function CreateInvoiceForm({ onCreated, onCancel, type, defaultTe
   const handleSubmit = async () => {
     if (!currentBusiness) return;
     setLoading(true);
+    setSubmitError('');
     try {
       const table = isInvoice ? 'invoices' : 'quotes';
       const numberField = isInvoice ? 'invoice_number' : 'quote_number';
@@ -100,7 +102,6 @@ export default function CreateInvoiceForm({ onCreated, onCancel, type, defaultTe
         notes: notes || null,
         total_amount: totalAmount,
         photo_urls: [],
-        template,
       };
 
       if (isInvoice) {
@@ -117,8 +118,9 @@ export default function CreateInvoiceForm({ onCreated, onCancel, type, defaultTe
       });
 
       onCreated(data as Invoice);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setSubmitError(err?.message ?? 'Une erreur est survenue. Réessayez.');
     } finally {
       setLoading(false);
     }
@@ -248,6 +250,11 @@ export default function CreateInvoiceForm({ onCreated, onCancel, type, defaultTe
       </Card>
 
       {/* Actions */}
+      {submitError && (
+        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600">
+          {submitError}
+        </div>
+      )}
       <div className="flex gap-3 pt-2">
         <Button variant="secondary" onClick={onCancel} className="flex-1">
           Annuler
