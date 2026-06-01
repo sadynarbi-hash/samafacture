@@ -13,6 +13,33 @@ async function loadImageAsDataUrl(url: string): Promise<string | null> {
   } catch { return null; }
 }
 
+async function removeWhiteBackground(dataUrl: string): Promise<string> {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i + 1], b = data[i + 2];
+        // If pixel is near-white, make transparent
+        if (r > 200 && g > 200 && b > 200) {
+          const whiteness = Math.min(r, g, b);
+          data[i + 3] = Math.max(0, 255 - whiteness);
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 async function renderStampSignature(doc: any, W: number, margin: number, stampUrl?: string, signatureUrl?: string) {
   if (!stampUrl && !signatureUrl) return;
 
@@ -22,18 +49,20 @@ async function renderStampSignature(doc: any, W: number, margin: number, stampUr
   doc.setFont('helvetica', 'normal');
 
   if (signatureUrl) {
-    const dataUrl = await loadImageAsDataUrl(signatureUrl);
-    if (dataUrl) {
+    const raw = await loadImageAsDataUrl(signatureUrl);
+    if (raw) {
+      const dataUrl = await removeWhiteBackground(raw);
       doc.text('Signature', margin, y);
-      doc.addImage(dataUrl, 'PNG', margin, y + 2, 40, 20, undefined, 'FAST');
+      doc.addImage(dataUrl, 'PNG', margin, y + 2, 45, 22, undefined, 'FAST');
     }
   }
 
   if (stampUrl) {
-    const dataUrl = await loadImageAsDataUrl(stampUrl);
-    if (dataUrl) {
-      doc.text('Cachet', W - margin - 40, y);
-      doc.addImage(dataUrl, 'PNG', W - margin - 40, y + 2, 40, 20, undefined, 'FAST');
+    const raw = await loadImageAsDataUrl(stampUrl);
+    if (raw) {
+      const dataUrl = await removeWhiteBackground(raw);
+      doc.text('Cachet', W - margin - 45, y);
+      doc.addImage(dataUrl, 'PNG', W - margin - 45, y + 2, 45, 22, undefined, 'FAST');
     }
   }
 }
