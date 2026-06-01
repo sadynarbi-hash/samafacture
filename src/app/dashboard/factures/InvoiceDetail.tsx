@@ -90,7 +90,14 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
     setShowTemplateSelect(false);
     setSharing(true);
     try {
-      const blob = await generateInvoicePDF(invoice, currentBusiness?.name ?? 'Mon entreprise', tmpl);
+      const blob = await generateInvoicePDF(
+        invoice,
+        currentBusiness?.name ?? 'Mon entreprise',
+        tmpl,
+        currentBusiness?.logo_url,
+        currentBusiness?.stamp_url,
+        currentBusiness?.signature_url,
+      );
       const fileName = `Facture-${invoice.invoice_number}-${invoice.client?.name ?? 'client'}.pdf`;
       if (pendingAction === 'print') {
         const url = URL.createObjectURL(blob);

@@ -1,5 +1,43 @@
 import type { Invoice } from '@/types';
 
+async function loadImageAsDataUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch { return null; }
+}
+
+async function renderStampSignature(doc: any, W: number, margin: number, stampUrl?: string, signatureUrl?: string) {
+  if (!stampUrl && !signatureUrl) return;
+
+  const y = 255;
+  doc.setTextColor(120, 120, 120);
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
+
+  if (signatureUrl) {
+    const dataUrl = await loadImageAsDataUrl(signatureUrl);
+    if (dataUrl) {
+      doc.text('Signature', margin, y);
+      doc.addImage(dataUrl, 'PNG', margin, y + 2, 40, 20, undefined, 'FAST');
+    }
+  }
+
+  if (stampUrl) {
+    const dataUrl = await loadImageAsDataUrl(stampUrl);
+    if (dataUrl) {
+      doc.text('Cachet', W - margin - 40, y);
+      doc.addImage(dataUrl, 'PNG', W - margin - 40, y + 2, 40, 20, undefined, 'FAST');
+    }
+  }
+}
+
 export type TemplateId = 'classique' | 'moderne' | 'epure';
 
 export interface Template {
@@ -18,7 +56,9 @@ export async function generateInvoicePDF(
   invoice: Invoice,
   businessName: string,
   templateId: TemplateId = 'classique',
-  logoUrl?: string
+  logoUrl?: string,
+  stampUrl?: string,
+  signatureUrl?: string,
 ): Promise<Blob> {
   const { default: jsPDF } = await import('jspdf');
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -33,6 +73,9 @@ export async function generateInvoicePDF(
   if (templateId === 'classique') await renderClassique(doc, invoice, businessName, W, margin, fmt, fmtDate, currency);
   else if (templateId === 'moderne') await renderModerne(doc, invoice, businessName, W, margin, fmt, fmtDate, currency);
   else await renderEpure(doc, invoice, businessName, W, margin, fmt, fmtDate, currency);
+
+  // Stamp & Signature at bottom
+  await renderStampSignature(doc, W, margin, stampUrl, signatureUrl);
 
   return doc.output('blob');
 }

@@ -16,6 +16,8 @@ export interface Business {
   phone?: string;
   address?: string;
   logo_url?: string;
+  stamp_url?: string;
+  signature_url?: string;
   invoice_count: number;
   quote_count: number;
   last_used_at: string;

@@ -27,6 +27,8 @@ export default function ParametresClient({ businesses: initial }: Props) {
   const router = useRouter();
   const { user } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const stampInputRef = useRef<HTMLInputElement>(null);
+  const signatureInputRef = useRef<HTMLInputElement>(null);
   const [businesses, setBusinesses] = useState(initial);
   const current = businesses[0];
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
@@ -40,12 +42,24 @@ export default function ParametresClient({ businesses: initial }: Props) {
     address: current?.address ?? '',
     logoPreview: current?.logo_url ?? '',
     logoFile: null as File | null,
+    stampPreview: current?.stamp_url ?? '',
+    stampFile: null as File | null,
+    signaturePreview: current?.signature_url ?? '',
+    signatureFile: null as File | null,
   });
 
   const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setBizForm(f => ({ ...f, logoFile: file, logoPreview: URL.createObjectURL(file) }));
+  };
+
+  const handleFileUpload = async (file: File, userId: string): Promise<string> => {
+    const ext = file.name.split('.').pop();
+    const path = `${userId}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('logos').upload(path, file);
+    if (error) return '';
+    return supabase.storage.from('logos').getPublicUrl(path).data.publicUrl;
   };
 
   const handleSaveEntreprise = async () => {
@@ -63,9 +77,24 @@ export default function ParametresClient({ businesses: initial }: Props) {
           logoUrl = publicUrl;
         }
       }
+
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      let stampUrl = current.stamp_url ?? '';
+      if (bizForm.stampFile) stampUrl = await handleFileUpload(bizForm.stampFile, authUser!.id);
+      let signatureUrl = current.signature_url ?? '';
+      if (bizForm.signatureFile) signatureUrl = await handleFileUpload(bizForm.signatureFile, authUser!.id);
+
       const { data, error } = await supabase
         .from('businesses')
-        .update({ name: bizForm.name, email: bizForm.email || null, phone: bizForm.phone || null, address: bizForm.address || null, logo_url: logoUrl || null })
+        .update({
+          name: bizForm.name,
+          email: bizForm.email || null,
+          phone: bizForm.phone || null,
+          address: bizForm.address || null,
+          logo_url: logoUrl || null,
+          stamp_url: stampUrl || null,
+          signature_url: signatureUrl || null,
+        })
         .eq('id', current.id)
         .select()
         .single();
@@ -229,6 +258,49 @@ export default function ParametresClient({ businesses: initial }: Props) {
           <Input label="Email" type="email" value={bizForm.email} onChange={e => setBizForm(f => ({ ...f, email: e.target.value }))} placeholder="contact@entreprise.com" />
           <Input label="Téléphone" value={bizForm.phone} onChange={e => setBizForm(f => ({ ...f, phone: e.target.value }))} placeholder="+221 77 000 00 00" />
           <Input label="Adresse" value={bizForm.address} onChange={e => setBizForm(f => ({ ...f, address: e.target.value }))} placeholder="Dakar, Sénégal" />
+
+          {/* Cachet & Signature */}
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            {/* Cachet */}
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={() => stampInputRef.current?.click()}
+                className="w-full h-24 bg-gray-50 rounded-2xl flex flex-col items-center justify-center overflow-hidden border-2 border-dashed border-gray-200 hover:border-black transition-colors"
+              >
+                {bizForm.stampPreview ? (
+                  <Image src={bizForm.stampPreview} alt="Cachet" width={88} height={88} className="object-contain w-full h-full p-1" />
+                ) : (
+                  <>
+                    <ImagePlus size={20} className="text-gray-400 mb-1" />
+                    <span className="text-xs text-gray-400">Cachet</span>
+                  </>
+                )}
+              </button>
+              <span className="text-xs text-gray-400 text-center">Cachet de l&apos;entreprise</span>
+              <input ref={stampInputRef} type="file" accept="image/*" className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) setBizForm(b => ({ ...b, stampFile: f, stampPreview: URL.createObjectURL(f) })); }} />
+            </div>
+
+            {/* Signature */}
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={() => signatureInputRef.current?.click()}
+                className="w-full h-24 bg-gray-50 rounded-2xl flex flex-col items-center justify-center overflow-hidden border-2 border-dashed border-gray-200 hover:border-black transition-colors"
+              >
+                {bizForm.signaturePreview ? (
+                  <Image src={bizForm.signaturePreview} alt="Signature" width={88} height={88} className="object-contain w-full h-full p-1" />
+                ) : (
+                  <>
+                    <ImagePlus size={20} className="text-gray-400 mb-1" />
+                    <span className="text-xs text-gray-400">Signature</span>
+                  </>
+                )}
+              </button>
+              <span className="text-xs text-gray-400 text-center">Signature du responsable</span>
+              <input ref={signatureInputRef} type="file" accept="image/*" className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) setBizForm(b => ({ ...b, signatureFile: f, signaturePreview: URL.createObjectURL(f) })); }} />
+            </div>
+          </div>
 
           <div className="flex gap-3 pt-2">
             <Button variant="secondary" onClick={() => setActiveModal(null)} className="flex-1">Annuler</Button>
