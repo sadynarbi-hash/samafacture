@@ -25,7 +25,7 @@ export default function CatalogueModal({ onClose }: Props) {
 
   // New item form
   const [form, setForm] = useState({
-    type: 'service' as 'service' | 'material' | 'other',
+    type: 'material' as 'service' | 'material' | 'other',
     name: '',
     unit_price: '',
     unit_type: '',

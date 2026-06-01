@@ -26,7 +26,7 @@ const typeConfig = [
 export default function AddItemForm({ onSave, onCancel, initial }: Props) {
   const supabase = createClient();
   const { currentBusiness } = useApp();
-  const [type, setType] = useState<ItemType>(initial?.type ?? 'service');
+  const [type, setType] = useState<ItemType>(initial?.type ?? 'material');
   const [name, setName] = useState(initial?.name ?? '');
   const [details, setDetails] = useState(initial?.details ?? '');
   const [unitPrice, setUnitPrice] = useState(String(initial?.unit_price ?? ''));
