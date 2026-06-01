@@ -91,14 +91,14 @@ export default function AddItemForm({ onSave, onCancel, initial }: Props) {
       {/* Fields */}
       <Input
         label="Nom"
-        placeholder="Ex: Conception de logo"
+        placeholder={type === 'material' ? 'Ex: Cahier, Mètre...' : type === 'service' ? 'Ex: Conception de logo' : 'Ex: Transport'}
         value={name}
         onChange={e => setName(e.target.value)}
         autoFocus
       />
       <Input
         label="Détails (optionnel)"
-        placeholder="Description du service..."
+        placeholder={type === 'material' ? 'Ex: Cahier 32 pages' : type === 'service' ? 'Description du service...' : 'Description...'}
         value={details}
         onChange={e => setDetails(e.target.value)}
       />
