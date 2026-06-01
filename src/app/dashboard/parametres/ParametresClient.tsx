@@ -273,28 +273,24 @@ export default function ParametresClient({ businesses: initial }: Props) {
       {/* ── MODAL: Support ── */}
       <Modal open={activeModal === 'support'} onClose={() => setActiveModal(null)} title="Contacter le support">
         <div className="space-y-4">
-          <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
-            <a href="mailto:sadynarbi@gmail.com" className="flex items-center gap-3 py-2">
-              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
-                <MessageCircle size={18} className="text-white" />
-              </div>
-              <div>
-                <p className="font-semibold text-black text-sm">Email</p>
-                <p className="text-xs text-gray-400">sadynarbi@gmail.com</p>
-              </div>
-              <ExternalLink size={14} className="text-gray-300 ml-auto" />
-            </a>
-            <a href="https://wa.me/221770000000" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 py-2">
-              <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
-                <MessageCircle size={18} className="text-white" />
-              </div>
-              <div>
-                <p className="font-semibold text-black text-sm">WhatsApp</p>
-                <p className="text-xs text-gray-400">Réponse en moins de 24h</p>
-              </div>
-              <ExternalLink size={14} className="text-gray-300 ml-auto" />
-            </a>
+          <div className="bg-green-50 rounded-2xl p-6 text-center">
+            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageCircle size={28} className="text-white" />
+            </div>
+            <p className="font-bold text-black mb-1">Support WhatsApp</p>
+            <p className="text-sm text-gray-500 mb-1">+221 77 333 95 83</p>
+            <p className="text-xs text-gray-400">Réponse rapide en français</p>
           </div>
+          <a
+            href="https://wa.me/221773339583?text=Bonjour,%20j'ai%20besoin%20d'aide%20avec%20SamaFacture"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button fullWidth className="bg-green-500 hover:bg-green-600">
+              <MessageCircle size={18} />
+              Ouvrir WhatsApp
+            </Button>
+          </a>
           <Button fullWidth variant="secondary" onClick={() => setActiveModal(null)}>Fermer</Button>
         </div>
       </Modal>
