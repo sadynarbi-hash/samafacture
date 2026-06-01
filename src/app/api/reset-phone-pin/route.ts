@@ -18,6 +18,12 @@ export async function POST(request: NextRequest) {
   const user = users.find(u => u.email === email);
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
+  // Only allow reset for incomplete registrations (pin never set).
+  // This prevents an attacker from deleting a fully-registered user's account.
+  if (user.user_metadata?.pin_set === true) {
+    return NextResponse.json({ error: 'Account already active' }, { status: 403 });
+  }
+
   const { error: deleteError } = await adminClient.auth.admin.deleteUser(user.id);
   if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 });
 

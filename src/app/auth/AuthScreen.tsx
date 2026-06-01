@@ -135,6 +135,11 @@ export default function AuthScreen() {
     });
     if (!res.ok) {
       const { error: resetError } = await res.json().catch(() => ({ error: 'Unknown' }));
+      if (resetError === 'Account already active') {
+        setLoading(false);
+        setError('Ce numéro a déjà un compte actif. Entrez votre PIN ou contactez le support.');
+        return;
+      }
       if (resetError !== 'User not found') {
         setLoading(false);
         setError('Impossible de réinitialiser. Contactez le support.');
