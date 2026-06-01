@@ -1,7 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
-import { Check, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import type { TemplateId } from '@/lib/pdfTemplates';
 
 interface Props {
@@ -9,38 +8,57 @@ interface Props {
   onBack: () => void;
 }
 
+const items = [
+  { name: 'Savon Duru', qty: '3', pu: '500', total: '1 500' },
+  { name: 'Cahier 32p', qty: '10', pu: '200', total: '2 000' },
+  { name: 'Stylo bic', qty: '20', pu: '75', total: '1 500' },
+];
+
 const previews: { id: TemplateId; name: string; description: string; preview: React.ReactNode }[] = [
   {
     id: 'classique',
     name: 'Classique',
-    description: 'En-tête noir avec nom de l\'entreprise',
+    description: 'En-tête noir, sobre et professionnel',
     preview: (
-      <div className="w-full h-full bg-white">
-        <div className="bg-black h-10 w-full flex items-end px-3 pb-2 gap-2">
-          <div className="w-16 h-2 bg-white/80 rounded-sm" />
-          <div className="ml-auto flex flex-col items-end gap-1">
-            <div className="w-10 h-1.5 bg-white/40 rounded-sm" />
-            <div className="w-7 h-1 bg-white/30 rounded-sm" />
+      <div className="w-full h-full bg-white text-[5px] font-sans overflow-hidden">
+        {/* Header */}
+        <div className="bg-black px-2.5 py-1.5">
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="text-white font-bold text-[7px]">Damis Shop</div>
+              <div className="text-white/50 text-[4px]">Dakar, Sénégal</div>
+            </div>
+            <div className="text-right">
+              <div className="text-white/60 text-[4px]">FACTURE</div>
+              <div className="text-white font-bold text-[6px]">#001</div>
+              <div className="text-white/50 text-[4px]">01/06/2026</div>
+            </div>
           </div>
         </div>
-        <div className="p-3 space-y-2">
-          <div className="w-14 h-1.5 bg-gray-300 rounded-sm" />
-          <div className="w-10 h-1 bg-gray-200 rounded-sm" />
-          <div className="mt-3 bg-gray-100 h-5 w-full rounded-sm flex items-center px-2 gap-2">
-            <div className="flex-1 h-1 bg-gray-300 rounded" />
-            <div className="w-5 h-1 bg-gray-300 rounded" />
-            <div className="w-8 h-1 bg-gray-300 rounded" />
+        {/* Client */}
+        <div className="px-2.5 py-1.5">
+          <div className="text-[4px] text-gray-400 font-bold mb-0.5">FACTURÉ À</div>
+          <div className="font-bold text-[5.5px] text-black">Amadou Diallo</div>
+          <div className="text-[4px] text-gray-400">amadou@email.com</div>
+          {/* Table header */}
+          <div className="bg-gray-100 flex justify-between px-1 py-0.5 mt-1.5 rounded-sm">
+            <span className="text-gray-500 font-bold flex-1">ARTICLE</span>
+            <span className="text-gray-500 font-bold w-4 text-center">QTÉ</span>
+            <span className="text-gray-500 font-bold w-8 text-right">TOTAL</span>
           </div>
-          {[1,2,3].map(i => (
-            <div key={i} className="flex items-center gap-2 py-1 border-b border-gray-100">
-              <div className="flex-1 h-1 bg-gray-200 rounded" />
-              <div className="w-4 h-1 bg-gray-200 rounded" />
-              <div className="w-8 h-1 bg-gray-200 rounded" />
+          {/* Items */}
+          {items.map((item, i) => (
+            <div key={i} className="flex justify-between px-1 py-0.5 border-b border-gray-100">
+              <span className="flex-1 text-black">{item.name}</span>
+              <span className="w-4 text-center text-gray-500">{item.qty}</span>
+              <span className="w-8 text-right font-semibold">{item.total}</span>
             </div>
           ))}
-          <div className="flex justify-end mt-2">
-            <div className="w-20 h-6 bg-black rounded-full flex items-center justify-center">
-              <div className="w-10 h-1.5 bg-white/70 rounded" />
+          {/* Total */}
+          <div className="flex justify-end mt-1.5">
+            <div className="bg-black text-white px-2 py-0.5 rounded-full flex gap-2">
+              <span className="font-bold">TOTAL</span>
+              <span className="font-bold">5 000 FCFA</span>
             </div>
           </div>
         </div>
@@ -52,36 +70,41 @@ const previews: { id: TemplateId; name: string; description: string; preview: Re
     name: 'Moderne',
     description: 'Ligne bleue, design contemporain',
     preview: (
-      <div className="w-full h-full bg-white">
-        <div className="bg-blue-600 h-1.5 w-full" />
-        <div className="p-3">
-          <div className="flex justify-between items-start mb-3">
-            <div className="space-y-1">
-              <div className="w-16 h-2.5 bg-blue-600 rounded-sm" />
-              <div className="w-10 h-1 bg-gray-200 rounded-sm" />
+      <div className="w-full h-full bg-white text-[5px] font-sans overflow-hidden">
+        {/* Blue accent */}
+        <div className="bg-blue-600 h-1" />
+        <div className="px-2.5 py-1.5">
+          <div className="flex justify-between items-start mb-1.5">
+            <div>
+              <div className="text-blue-600 font-bold text-[7px]">Damis Shop</div>
+              <div className="text-gray-400 text-[4px]">Dakar, Sénégal</div>
             </div>
-            <div className="flex flex-col items-end gap-1">
-              <div className="w-8 h-1 bg-gray-300 rounded-sm" />
-              <div className="w-12 h-2 bg-gray-800 rounded-sm" />
+            <div className="text-right">
+              <div className="text-gray-400 text-[4px]">Facture</div>
+              <div className="text-gray-800 font-bold text-[6px]">#001</div>
+              <div className="text-gray-400 text-[4px]">01/06/2026</div>
             </div>
           </div>
-          <div className="border-b border-blue-200 mb-3" />
-          <div className="w-12 h-1.5 bg-gray-300 rounded-sm mb-2" />
-          <div className="bg-blue-50 h-5 w-full rounded-sm flex items-center px-2 gap-2 mb-1">
-            <div className="flex-1 h-1 bg-blue-200 rounded" />
-            <div className="w-4 h-1 bg-blue-200 rounded" />
-            <div className="w-8 h-1 bg-blue-200 rounded" />
+          <div className="border-b border-blue-200 mb-1.5" />
+          <div className="text-[4px] text-gray-400 font-bold mb-0.5">FACTURÉ À</div>
+          <div className="font-bold text-[5.5px] text-black mb-1">Amadou Diallo</div>
+          {/* Table header */}
+          <div className="bg-blue-50 flex justify-between px-1 py-0.5 rounded-sm">
+            <span className="text-blue-500 font-bold flex-1">ARTICLE</span>
+            <span className="text-blue-500 font-bold w-4 text-center">QTÉ</span>
+            <span className="text-blue-500 font-bold w-8 text-right">TOTAL</span>
           </div>
-          {[1,2,3].map(i => (
-            <div key={i} className="flex items-center gap-2 py-1 border-b border-gray-100">
-              <div className="flex-1 h-1 bg-gray-200 rounded" />
-              <div className="w-4 h-1 bg-gray-200 rounded" />
-              <div className="w-8 h-1 bg-gray-200 rounded" />
+          {items.map((item, i) => (
+            <div key={i} className="flex justify-between px-1 py-0.5 border-b border-gray-100">
+              <span className="flex-1 text-black">{item.name}</span>
+              <span className="w-4 text-center text-gray-500">{item.qty}</span>
+              <span className="w-8 text-right font-semibold">{item.total}</span>
             </div>
           ))}
-          <div className="flex justify-end mt-2">
-            <div className="w-20 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-              <div className="w-10 h-1.5 bg-white/70 rounded" />
+          <div className="flex justify-end mt-1.5">
+            <div className="bg-blue-600 text-white px-2 py-0.5 rounded-full flex gap-2">
+              <span className="font-bold">TOTAL</span>
+              <span className="font-bold">5 000 FCFA</span>
             </div>
           </div>
         </div>
@@ -91,36 +114,41 @@ const previews: { id: TemplateId; name: string; description: string; preview: Re
   {
     id: 'epure',
     name: 'Épuré',
-    description: 'Minimaliste tout blanc',
+    description: 'Minimaliste, élégant',
     preview: (
-      <div className="w-full h-full bg-white p-3">
-        <div className="flex justify-between items-start mb-3">
-          <div className="space-y-1">
-            <div className="w-16 h-2.5 bg-gray-800 rounded-sm" />
-            <div className="w-10 h-1 bg-gray-200 rounded-sm" />
+      <div className="w-full h-full bg-white text-[5px] font-sans overflow-hidden">
+        <div className="px-2.5 py-2">
+          <div className="flex justify-between items-start mb-1.5">
+            <div>
+              <div className="text-gray-800 font-bold text-[7px]">Damis Shop</div>
+              <div className="text-gray-400 text-[4px]">Dakar, Sénégal</div>
+            </div>
+            <div className="text-right">
+              <div className="text-gray-300 text-[4px]">Facture</div>
+              <div className="text-gray-600 font-bold text-[6px]">N° 001</div>
+              <div className="text-gray-400 text-[4px]">01/06/2026</div>
+            </div>
           </div>
-          <div className="flex flex-col items-end gap-1">
-            <div className="w-8 h-1 bg-gray-200 rounded-sm" />
-            <div className="w-12 h-2 bg-gray-400 rounded-sm" />
+          <div className="border-b border-gray-100 mb-1.5" />
+          <div className="text-[4px] text-gray-300 font-bold mb-0.5">FACTURÉ À</div>
+          <div className="font-bold text-[5.5px] text-black mb-1">Amadou Diallo</div>
+          <div className="bg-gray-50 flex justify-between px-1 py-0.5 rounded-sm">
+            <span className="text-gray-400 font-bold flex-1">ARTICLE</span>
+            <span className="text-gray-400 font-bold w-4 text-center">QTÉ</span>
+            <span className="text-gray-400 font-bold w-8 text-right">TOTAL</span>
           </div>
-        </div>
-        <div className="border-b border-gray-100 mb-3" />
-        <div className="w-12 h-1.5 bg-gray-200 rounded-sm mb-2" />
-        <div className="bg-gray-50 h-5 w-full rounded-sm flex items-center px-2 gap-2 mb-1">
-          <div className="flex-1 h-1 bg-gray-200 rounded" />
-          <div className="w-4 h-1 bg-gray-200 rounded" />
-          <div className="w-8 h-1 bg-gray-200 rounded" />
-        </div>
-        {[1,2,3].map(i => (
-          <div key={i} className="flex items-center gap-2 py-1 border-b border-gray-50">
-            <div className="flex-1 h-1 bg-gray-100 rounded" />
-            <div className="w-4 h-1 bg-gray-100 rounded" />
-            <div className="w-8 h-1 bg-gray-100 rounded" />
-          </div>
-        ))}
-        <div className="flex justify-end mt-2">
-          <div className="w-20 h-6 bg-gray-800 rounded-full flex items-center justify-center">
-            <div className="w-10 h-1.5 bg-white/70 rounded" />
+          {items.map((item, i) => (
+            <div key={i} className="flex justify-between px-1 py-0.5 border-b border-gray-50">
+              <span className="flex-1 text-black">{item.name}</span>
+              <span className="w-4 text-center text-gray-400">{item.qty}</span>
+              <span className="w-8 text-right text-gray-600 font-semibold">{item.total}</span>
+            </div>
+          ))}
+          <div className="flex justify-end mt-1.5">
+            <div className="bg-gray-800 text-white px-2 py-0.5 rounded-full flex gap-2">
+              <span className="font-bold">TOTAL</span>
+              <span className="font-bold">5 000 FCFA</span>
+            </div>
           </div>
         </div>
       </div>
@@ -130,26 +158,22 @@ const previews: { id: TemplateId; name: string; description: string; preview: Re
 
 export default function TemplateSelector({ onSelect, onBack }: Props) {
   return (
-    <div className="min-h-full flex flex-col">
-      {/* Header */}
-      <div className="mb-6">
-        <button onClick={onBack} className="text-gray-400 text-sm hover:text-black mb-4 flex items-center gap-1">
-          ← Retour
-        </button>
-        <h2 className="text-2xl font-bold text-black">Choisissez un modèle</h2>
-        <p className="text-gray-400 text-sm mt-1">Il sera utilisé pour générer le PDF de votre facture</p>
-      </div>
+    <div className="flex flex-col">
+      <button onClick={onBack} className="text-gray-400 text-sm hover:text-black mb-4 flex items-center gap-1 self-start">
+        ← Retour
+      </button>
+      <h2 className="text-2xl font-bold text-black mb-1">Choisissez un modèle</h2>
+      <p className="text-gray-400 text-sm mb-6">Sélectionnez le design de votre facture PDF</p>
 
-      {/* Templates */}
-      <div className="space-y-4 flex-1">
+      <div className="space-y-4">
         {previews.map(({ id, name, description, preview }) => (
           <button
             key={id}
             onClick={() => onSelect(id)}
-            className="w-full flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm hover:shadow-md active:scale-[0.99] transition-all text-left border-2 border-transparent hover:border-gray-100"
+            className="w-full flex items-center gap-4 bg-white rounded-2xl p-3 shadow-sm hover:shadow-md active:scale-[0.99] transition-all text-left border-2 border-transparent hover:border-gray-100"
           >
-            {/* Preview thumbnail */}
-            <div className="w-20 h-28 rounded-xl overflow-hidden border border-gray-100 shrink-0 shadow-sm">
+            {/* Preview */}
+            <div className="w-24 h-32 rounded-xl overflow-hidden border border-gray-100 shrink-0 shadow-sm">
               {preview}
             </div>
             {/* Info */}
