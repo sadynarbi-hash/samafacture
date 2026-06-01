@@ -9,7 +9,8 @@ import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import { formatAmount, formatDate } from '@/lib/utils';
-import { generateInvoicePDF } from '@/lib/generatePDF';
+import { generateInvoicePDF } from '@/lib/pdfTemplates';
+import type { TemplateId } from '@/lib/pdfTemplates';
 import type { Invoice } from '@/types';
 import { Share2, Printer, Pencil, CheckCircle, CreditCard, X } from 'lucide-react';
 
@@ -75,7 +76,8 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
   const handleShare = async () => {
     setSharing(true);
     try {
-      const blob = await generateInvoicePDF(invoice, currentBusiness?.name ?? 'Mon entreprise');
+      const tmpl = ((invoice as any).template as TemplateId) || 'classique';
+      const blob = await generateInvoicePDF(invoice, currentBusiness?.name ?? 'Mon entreprise', tmpl);
       const fileName = `Facture-${invoice.invoice_number}-${invoice.client?.name ?? 'client'}.pdf`;
       const file = new File([blob], fileName, { type: 'application/pdf' });
 
@@ -98,7 +100,8 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
   };
 
   const handlePrint = async () => {
-    const blob = await generateInvoicePDF(invoice, currentBusiness?.name ?? 'Mon entreprise');
+    const tmpl2 = ((invoice as any).template as TemplateId) || 'classique';
+    const blob = await generateInvoicePDF(invoice, currentBusiness?.name ?? 'Mon entreprise', tmpl2);
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
   };

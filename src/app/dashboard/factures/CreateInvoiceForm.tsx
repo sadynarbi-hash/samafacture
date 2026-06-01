@@ -7,11 +7,13 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
-import { Plus, Trash2, User, Package, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, User, ChevronDown } from 'lucide-react';
 import { todayISO } from '@/lib/utils';
 import type { Invoice, Client, InvoiceItem, Quote } from '@/types';
 import SelectItemModal from './SelectItemModal';
 import SelectClientModal from '@/app/dashboard/clients/SelectClientModal';
+import TemplateSelector from '@/components/ui/TemplateSelector';
+import type { TemplateId } from '@/lib/pdfTemplates';
 
 const CURRENCIES = ['FCFA', 'EUR', 'USD', 'XOF', 'MAD', 'DZD', 'TND'];
 
@@ -28,6 +30,7 @@ export default function CreateInvoiceForm({ onCreated, onCancel, type }: Props) 
   const [showAddItem, setShowAddItem] = useState(false);
   const [showSelectClient, setShowSelectClient] = useState(false);
 
+  const [template, setTemplate] = useState<TemplateId>('classique');
   const [issueDate, setIssueDate] = useState(todayISO());
   const [dueDate, setDueDate] = useState('');
   const [client, setClient] = useState<Client | null>(null);
@@ -97,6 +100,7 @@ export default function CreateInvoiceForm({ onCreated, onCancel, type }: Props) 
         notes: notes || null,
         total_amount: totalAmount,
         photo_urls: [],
+        template,
       };
 
       if (isInvoice) {
@@ -229,6 +233,11 @@ export default function CreateInvoiceForm({ onCreated, onCancel, type }: Props) 
             {totalAmount.toLocaleString('fr-FR')} {currency}
           </span>
         </div>
+      </Card>
+
+      {/* Template */}
+      <Card>
+        <TemplateSelector selected={template} onChange={setTemplate} />
       </Card>
 
       {/* Notes */}
