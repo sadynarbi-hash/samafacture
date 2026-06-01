@@ -52,22 +52,22 @@ export default function AuthScreen() {
     setError('');
     setLoading(true);
 
-    // Check if user exists by trying to sign in with a dummy to probe
     const fakeEmail = phoneToEmail(cleaned);
-    // Try to sign in — if credentials wrong, user likely exists but wrong PIN
-    // If user doesn't exist, we'll create them
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { error: signUpError } = await supabase.auth.signUp({
       email: fakeEmail,
-      password: '____probe____',
+      password: `TEMP_${crypto.randomUUID()}`,
+      options: { data: { phone: cleaned, pin_set: false } },
     });
 
     setLoading(false);
-    if (!signInError || signInError.message === 'Invalid login credentials') {
-      // User exists → ask for PIN
+    if (!signUpError) {
+      // New user just created + auto-signed in; next step is to set their PIN
+      setPhoneStep('newpin');
+    } else if (signUpError.message === 'User already registered') {
+      // Existing user → ask for their PIN
       setPhoneStep('pin');
     } else {
-      // User doesn't exist → create new account
-      setPhoneStep('newpin');
+      setError(signUpError.message);
     }
   };
 
@@ -97,17 +97,11 @@ export default function AuthScreen() {
     const cleaned = formatPhone(phone);
     setLoading(true);
     setError('');
-    const { error } = await supabase.auth.signUp({
-      email: phoneToEmail(cleaned),
+    // User was already created (and signed in) in handlePhoneNext — just update their password
+    const { error } = await supabase.auth.updateUser({
       password: `PIN_${newPin}_${cleaned}`,
-      options: { data: { phone: cleaned } },
+      data: { pin_set: true },
     });
-    if (!error) {
-      await supabase.auth.signInWithPassword({
-        email: phoneToEmail(cleaned),
-        password: `PIN_${newPin}_${cleaned}`,
-      });
-    }
     setLoading(false);
     if (error) {
       setError(error.message);
@@ -119,7 +113,7 @@ export default function AuthScreen() {
 
   const handlePinInput = (val: string, idx: number, current: string[], setter: (v: string) => void, nextStep?: () => void) => {
     const digit = val.replace(/\D/g, '').slice(-1);
-    const arr = current.split('');
+    const arr = [...current];
     arr[idx] = digit;
     const newVal = arr.join('');
     setter(newVal);
