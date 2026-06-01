@@ -12,7 +12,6 @@ import { todayISO } from '@/lib/utils';
 import type { Invoice, Client, InvoiceItem, Quote } from '@/types';
 import SelectItemModal from './SelectItemModal';
 import SelectClientModal from '@/app/dashboard/clients/SelectClientModal';
-import TemplateSelector from '@/components/ui/TemplateSelector';
 import type { TemplateId } from '@/lib/pdfTemplates';
 
 const CURRENCIES = ['FCFA', 'EUR', 'USD', 'XOF', 'MAD', 'DZD', 'TND'];
@@ -21,16 +20,17 @@ interface Props {
   onCreated: (doc: Invoice | Quote) => void;
   onCancel: () => void;
   type: 'invoice' | 'quote';
+  defaultTemplate?: TemplateId;
 }
 
-export default function CreateInvoiceForm({ onCreated, onCancel, type }: Props) {
+export default function CreateInvoiceForm({ onCreated, onCancel, type, defaultTemplate = 'classique' }: Props) {
   const supabase = createClient();
   const { currentBusiness } = useApp();
   const [loading, setLoading] = useState(false);
   const [showAddItem, setShowAddItem] = useState(false);
   const [showSelectClient, setShowSelectClient] = useState(false);
 
-  const [template, setTemplate] = useState<TemplateId>('classique');
+  const [template] = useState<TemplateId>(defaultTemplate);
   const [issueDate, setIssueDate] = useState(todayISO());
   const [dueDate, setDueDate] = useState('');
   const [client, setClient] = useState<Client | null>(null);
@@ -233,11 +233,6 @@ export default function CreateInvoiceForm({ onCreated, onCancel, type }: Props) 
             {totalAmount.toLocaleString('fr-FR')} {currency}
           </span>
         </div>
-      </Card>
-
-      {/* Template */}
-      <Card>
-        <TemplateSelector selected={template} onChange={setTemplate} />
       </Card>
 
       {/* Notes */}
