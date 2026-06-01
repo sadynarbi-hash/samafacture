@@ -17,7 +17,9 @@ function phoneToEmail(phone: string): string {
   return `tel_${phone}@samafacture.app`;
 }
 
-// Defined at module level so React never remounts it on re-render
+// Module-level component (stable reference, never remounted on parent re-render).
+// onComplete receives the freshly-computed 4-digit string — callers must not rely
+// on React state for the completed value, since the state update is async.
 function PinInput({
   value,
   onChange,
@@ -26,18 +28,23 @@ function PinInput({
 }: {
   value: string;
   onChange: (v: string) => void;
-  onComplete?: () => void;
+  onComplete?: (completedValue: string) => void;
   pinRefs: React.RefObject<HTMLInputElement | null>[];
 }) {
+  // latestValue ref lets rapid successive keystrokes accumulate correctly even if
+  // the parent hasn't re-rendered yet between taps.
+  const latestValue = useRef(value);
+  latestValue.current = value;
+
   const handle = (rawVal: string, idx: number) => {
     const digit = rawVal.replace(/\D/g, '').slice(-1);
-    const arr = [...value.split('')];
+    const arr = [...latestValue.current.split('')];
     arr[idx] = digit;
     const newVal = arr.join('');
+    latestValue.current = newVal;
     onChange(newVal);
     if (digit && idx < 3) pinRefs[idx + 1].current?.focus();
-    // newVal is a local var — no stale closure issue
-    if (newVal.length === 4 && onComplete) setTimeout(onComplete, 100);
+    if (newVal.length === 4 && onComplete) setTimeout(() => onComplete(newVal), 100);
   };
 
   return (
@@ -145,14 +152,15 @@ export default function AuthScreen() {
     setPhoneStep('newpin');
   };
 
-  const handleSignInWithPin = async () => {
-    if (pin.length !== 4) return;
+  // pinValue is passed directly from PinInput to avoid stale closure on the state.
+  const handleSignInWithPin = async (pinValue: string) => {
+    if (pinValue.length !== 4) return;
     const cleaned = formatPhone(phone);
     setLoading(true);
     setError('');
     const { error } = await supabase.auth.signInWithPassword({
       email: phoneToEmail(cleaned),
-      password: `PIN_${pin}_${cleaned}`,
+      password: `PIN_${pinValue}_${cleaned}`,
     });
     setLoading(false);
     if (error) {
@@ -165,9 +173,10 @@ export default function AuthScreen() {
     }
   };
 
-  const handleCreateAccount = async () => {
+  // confirmPinValue is passed directly from PinInput; newPin is stable (set earlier).
+  const handleCreateAccount = async (confirmPinValue: string) => {
     if (newPin.length !== 4) return;
-    if (newPin !== confirmPin) { setError('Les codes ne correspondent pas'); return; }
+    if (newPin !== confirmPinValue) { setError('Les codes ne correspondent pas'); return; }
     const cleaned = formatPhone(phone);
     setLoading(true);
     setError('');
@@ -254,7 +263,7 @@ export default function AuthScreen() {
               <p className="text-gray-400 text-sm mb-8">Entrez votre code à 4 chiffres</p>
               <PinInput value={pin} onChange={setPin} onComplete={handleSignInWithPin} pinRefs={pinRefs} />
               {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
-              <Button fullWidth loading={loading} disabled={pin.length !== 4} onClick={handleSignInWithPin} className="mt-6">
+              <Button fullWidth loading={loading} disabled={pin.length !== 4} onClick={() => handleSignInWithPin(pin)} className="mt-6">
                 Se connecter
               </Button>
               <div className="flex flex-col items-center gap-2 mt-4">
@@ -275,7 +284,12 @@ export default function AuthScreen() {
             <div className="bg-white rounded-3xl p-8 shadow-sm text-center">
               <h2 className="text-2xl font-bold mb-1">Créez votre PIN</h2>
               <p className="text-gray-400 text-sm mb-8">Choisissez un code à 4 chiffres facile à retenir</p>
-              <PinInput value={newPin} onChange={setNewPin} onComplete={() => setPhoneStep('confirmpin')} pinRefs={pinRefs} />
+              <PinInput
+                value={newPin}
+                onChange={setNewPin}
+                onComplete={(val) => { setNewPin(val); setPhoneStep('confirmpin'); }}
+                pinRefs={pinRefs}
+              />
               <Button fullWidth disabled={newPin.length !== 4} onClick={() => setPhoneStep('confirmpin')} className="mt-6">
                 Continuer
               </Button>
@@ -289,7 +303,7 @@ export default function AuthScreen() {
               <p className="text-gray-400 text-sm mb-8">Entrez à nouveau votre code à 4 chiffres</p>
               <PinInput value={confirmPin} onChange={setConfirmPin} onComplete={handleCreateAccount} pinRefs={pinRefs} />
               {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
-              <Button fullWidth loading={loading} disabled={confirmPin.length !== 4} onClick={handleCreateAccount} className="mt-6">
+              <Button fullWidth loading={loading} disabled={confirmPin.length !== 4} onClick={() => handleCreateAccount(confirmPin)} className="mt-6">
                 Créer mon compte
               </Button>
               <button onClick={() => { setPhoneStep('newpin'); setConfirmPin(''); setError(''); }}
