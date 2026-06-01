@@ -252,15 +252,15 @@ export default function ParametresClient({ businesses: initial }: Props) {
           {/* Free plan */}
           <div className="border-2 border-gray-200 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-2">
-              <p className="font-bold text-black">Gratuit</p>
+              <p className="font-bold text-black">Essai gratuit</p>
               <span className="bg-gray-100 text-gray-600 text-xs font-semibold px-2 py-1 rounded-full">Plan actuel</span>
             </div>
+            <p className="text-sm text-orange-500 font-semibold mb-2">⏱ 3 jours d&apos;essai</p>
             <ul className="text-sm text-gray-500 space-y-1">
-              <li>✓ 5 factures par mois</li>
-              <li>✓ 5 devis par mois</li>
-              <li>✓ 10 clients</li>
-              <li>✗ Catalogue de prix</li>
-              <li>✗ Export PDF avancé</li>
+              <li>✓ Toutes les fonctionnalités pendant 3 jours</li>
+              <li>✓ Factures et devis illimités</li>
+              <li>✓ Clients illimités</li>
+              <li>✗ Après 3 jours, abonnement requis</li>
             </ul>
           </div>
 
