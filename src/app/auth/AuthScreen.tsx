@@ -71,6 +71,34 @@ export default function AuthScreen() {
     }
   };
 
+  const handleResetPin = async () => {
+    const cleaned = formatPhone(phone);
+    setLoading(true);
+    setError('');
+    const res = await fetch('/api/reset-phone-pin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: cleaned }),
+    });
+    if (!res.ok) {
+      const { error: resetError } = await res.json().catch(() => ({ error: 'Unknown' }));
+      if (resetError !== 'User not found') {
+        setLoading(false);
+        setError('Impossible de réinitialiser. Contactez le support.');
+        return;
+      }
+    }
+    const { error: signUpError } = await supabase.auth.signUp({
+      email: phoneToEmail(cleaned),
+      password: `TEMP_${crypto.randomUUID()}`,
+      options: { data: { phone: cleaned, pin_set: false } },
+    });
+    setLoading(false);
+    if (signUpError) { setError(signUpError.message); return; }
+    setPin(''); setNewPin(''); setConfirmPin('');
+    setPhoneStep('newpin');
+  };
+
   const handleSignInWithPin = async () => {
     if (pin.length !== 4) return;
     const cleaned = formatPhone(phone);
@@ -214,6 +242,10 @@ export default function AuthScreen() {
               <button onClick={() => { setPhoneStep('number'); setPin(''); setError(''); }}
                 className="text-gray-400 text-sm mt-4 hover:text-black">
                 Changer de numéro
+              </button>
+              <button onClick={handleResetPin} disabled={loading}
+                className="text-gray-400 text-xs mt-2 hover:text-black disabled:opacity-50">
+                Pas de PIN ?
               </button>
             </div>
           )}
