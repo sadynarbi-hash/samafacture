@@ -25,6 +25,7 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
   const [showPayment, setShowPayment] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentNote, setPaymentNote] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
   const [loading, setLoading] = useState(false);
   const [sharing, setSharing] = useState(false);
 
@@ -49,7 +50,7 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
 
     const newPayments = [
       ...(invoice.payments ?? []),
-      { id: crypto.randomUUID(), amount, date: new Date().toISOString(), note: paymentNote || undefined },
+      { id: crypto.randomUUID(), amount, date: new Date().toISOString(), note: [paymentMethod, paymentNote].filter(Boolean).join(' — ') || undefined },
     ];
     const newPaid = Math.min(invoice.total_amount, (invoice.paid_amount ?? 0) + amount);
     const newStatus = newPaid >= invoice.total_amount ? 'paid' : 'partial';
@@ -67,6 +68,7 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
       setShowPayment(false);
       setPaymentAmount('');
       setPaymentNote('');
+      setPaymentMethod('');
     }
   };
 
@@ -237,7 +239,7 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
       </Button>
 
       {/* Payment modal */}
-      <Modal open={showPayment} onClose={() => setShowPayment(false)} title="Ajouter un paiement">
+      <Modal open={showPayment} onClose={() => setShowPayment(false)} title="Paiement reçu">
         <div className="space-y-4">
           <Input
             label="Montant reçu"
@@ -246,9 +248,63 @@ export default function InvoiceDetail({ invoice, onClose, onUpdated }: Props) {
             value={paymentAmount}
             onChange={e => setPaymentAmount(e.target.value)}
           />
+
+          {/* Payment method */}
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-2">Moyen de paiement</p>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                {
+                  key: 'Wave',
+                  label: 'Wave',
+                  color: 'bg-blue-500',
+                  logo: (
+                    <svg viewBox="0 0 40 40" className="w-6 h-6" fill="none">
+                      <circle cx="20" cy="20" r="20" fill="#1B87E6"/>
+                      <path d="M10 20 Q15 12 20 20 Q25 28 30 20" stroke="white" strokeWidth="3" strokeLinecap="round" fill="none"/>
+                    </svg>
+                  ),
+                },
+                {
+                  key: 'Orange Money',
+                  label: 'Orange Money',
+                  color: 'bg-orange-500',
+                  logo: (
+                    <svg viewBox="0 0 40 40" className="w-6 h-6" fill="none">
+                      <circle cx="20" cy="20" r="20" fill="#FF6600"/>
+                      <circle cx="20" cy="20" r="10" fill="white"/>
+                      <circle cx="20" cy="20" r="5" fill="#FF6600"/>
+                    </svg>
+                  ),
+                },
+                {
+                  key: 'Espèces',
+                  label: 'Espèces',
+                  color: 'bg-green-600',
+                  logo: (
+                    <span className="text-xl">💵</span>
+                  ),
+                },
+              ].map(({ key, label, logo }) => (
+                <button
+                  key={key}
+                  onClick={() => setPaymentMethod(paymentMethod === key ? '' : key)}
+                  className={`flex flex-col items-center gap-1.5 py-3 rounded-2xl border-2 transition-all ${
+                    paymentMethod === key
+                      ? 'border-black bg-black text-white'
+                      : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  {logo}
+                  <span className="text-xs font-semibold leading-tight text-center">{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <Input
             label="Note (optionnel)"
-            placeholder="Ex: Virement Orange Money"
+            placeholder="Référence, commentaire..."
             value={paymentNote}
             onChange={e => setPaymentNote(e.target.value)}
           />
