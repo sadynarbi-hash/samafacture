@@ -10,7 +10,7 @@ import Modal from '@/components/ui/Modal';
 import { Plus, Trash2, User, Package, ChevronDown } from 'lucide-react';
 import { todayISO } from '@/lib/utils';
 import type { Invoice, Client, InvoiceItem, Quote } from '@/types';
-import AddItemForm from './AddItemForm';
+import SelectItemModal from './SelectItemModal';
 import SelectClientModal from '@/app/dashboard/clients/SelectClientModal';
 
 const CURRENCIES = ['FCFA', 'EUR', 'USD', 'XOF', 'MAD', 'DZD', 'TND'];
@@ -255,7 +255,7 @@ export default function CreateInvoiceForm({ onCreated, onCancel, type }: Props) 
 
       {/* Add item modal */}
       <Modal open={showAddItem} onClose={() => setShowAddItem(false)} title="Ajouter un article">
-        <AddItemForm onSave={handleItemAdded} onCancel={() => setShowAddItem(false)} />
+        <SelectItemModal onSave={handleItemAdded} onCancel={() => setShowAddItem(false)} />
       </Modal>
 
       {/* Select client modal */}
