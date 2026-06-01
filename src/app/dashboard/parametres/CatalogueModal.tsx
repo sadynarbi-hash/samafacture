@@ -86,8 +86,8 @@ export default function CatalogueModal({ onClose }: Props) {
   ];
 
   const typeOptions: { key: 'service' | 'material' | 'other'; label: string }[] = [
-    { key: 'service', label: 'Service' },
     { key: 'material', label: 'Matériel' },
+    { key: 'service', label: 'Service' },
     { key: 'other', label: 'Autre' },
   ];
 

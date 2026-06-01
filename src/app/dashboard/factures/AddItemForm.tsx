@@ -18,8 +18,8 @@ interface Props {
 type ItemType = 'service' | 'material' | 'other';
 
 const typeConfig = [
-  { type: 'service' as ItemType, label: 'Service', icon: Wrench },
   { type: 'material' as ItemType, label: 'Matériel', icon: Package },
+  { type: 'service' as ItemType, label: 'Service', icon: Wrench },
   { type: 'other' as ItemType, label: 'Autre', icon: MoreHorizontal },
 ];
 
