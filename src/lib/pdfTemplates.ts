@@ -26,7 +26,8 @@ export async function generateInvoicePDF(
   const margin = 15;
 
   const currency = invoice.currency || 'FCFA';
-  const fmt = (n: number) => n.toLocaleString('fr-FR') + ' ' + currency;
+  const fmtNum = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const fmt = (n: number) => fmtNum(n) + ' ' + currency;
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
   if (templateId === 'classique') await renderClassique(doc, invoice, businessName, W, margin, fmt, fmtDate, currency);
