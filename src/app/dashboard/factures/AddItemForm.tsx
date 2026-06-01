@@ -134,37 +134,59 @@ export default function AddItemForm({ onSave, onCancel, initial }: Props) {
 
       {/* Toggles */}
       <div className="space-y-3">
-        {[
-          { label: 'Taxable ?', value: taxable, set: setTaxable },
-          { label: 'Sauvegarder dans le catalogue', value: saveToCatalog, set: setSaveToCatalog },
-        ].map(({ label, value, set }) => (
-          <div key={label} className="flex items-center justify-between py-2">
-            <span className="text-sm font-medium text-gray-700">{label}</span>
-            <button
-              onClick={() => set(!value)}
-              className={cn(
-                'relative w-12 h-6 rounded-full transition-colors',
-                value ? 'bg-black' : 'bg-gray-200'
-              )}
-            >
-              <div className={cn(
-                'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform',
-                value ? 'translate-x-7' : 'translate-x-1'
-              )} />
-            </button>
+        {/* Taxable */}
+        <div className="flex items-center justify-between py-2">
+          <div>
+            <span className="text-sm font-medium text-gray-700">Taxable ?</span>
+            {taxable && (
+              <span className="ml-2 text-xs font-semibold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">TVA 18%</span>
+            )}
           </div>
-        ))}
+          <button
+            onClick={() => setTaxable(!taxable)}
+            className={cn('relative w-12 h-6 rounded-full transition-colors', taxable ? 'bg-black' : 'bg-gray-200')}
+          >
+            <div className={cn('absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform', taxable ? 'translate-x-7' : 'translate-x-1')} />
+          </button>
+        </div>
+
+        {/* Save to catalog */}
+        <div className="flex items-center justify-between py-2">
+          <span className="text-sm font-medium text-gray-700">Sauvegarder dans le catalogue</span>
+          <button
+            onClick={() => setSaveToCatalog(!saveToCatalog)}
+            className={cn('relative w-12 h-6 rounded-full transition-colors', saveToCatalog ? 'bg-black' : 'bg-gray-200')}
+          >
+            <div className={cn('absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform', saveToCatalog ? 'translate-x-7' : 'translate-x-1')} />
+          </button>
+        </div>
       </div>
 
       {/* Preview */}
       {name && unitPrice && (
-        <div className="bg-gray-50 rounded-xl p-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-500">Sous-total</span>
-            <span className="font-semibold">
-              {(Number(unitPrice) * (Number(quantity) || 1) * (1 - (Number(discount) || 0) / 100)).toLocaleString('fr-FR')}
-            </span>
-          </div>
+        <div className="bg-gray-50 rounded-xl p-3 text-sm space-y-1.5">
+          {(() => {
+            const base = Number(unitPrice) * (Number(quantity) || 1) * (1 - (Number(discount) || 0) / 100);
+            const tva = taxable ? base * 0.18 : 0;
+            return (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Sous-total HT</span>
+                  <span className="font-semibold">{base.toLocaleString('fr-FR')}</span>
+                </div>
+                {taxable && (
+                  <div className="flex justify-between text-orange-500">
+                    <span>TVA 18%</span>
+                    <span className="font-semibold">+{tva.toLocaleString('fr-FR')}</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t border-gray-200 pt-1.5">
+                  <span className="font-semibold text-black">Total TTC</span>
+                  <span className="font-bold text-black">{(base + tva).toLocaleString('fr-FR')}</span>
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
 
